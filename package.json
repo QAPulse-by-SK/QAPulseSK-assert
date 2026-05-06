@@ -1,0 +1,92 @@
+{
+  "name": "qapulsesk-assert",
+  "version": "1.0.0",
+  "description": "All-in-one assertion library for Playwright, Cypress, Jest, Vitest & WebdriverIO — fuzzy, semantic, visual & accessibility assertions. AI-enhanced, free by default. By QAPulse by SK.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./playwright": {
+      "require": "./dist/adapters/playwright.js",
+      "types": "./dist/adapters/playwright.d.ts"
+    },
+    "./cypress": {
+      "require": "./dist/adapters/cypress.js",
+      "types": "./dist/adapters/cypress.d.ts"
+    },
+    "./jest": {
+      "require": "./dist/adapters/jest.js",
+      "types": "./dist/adapters/jest.d.ts"
+    },
+    "./vitest": {
+      "require": "./dist/adapters/vitest.js",
+      "types": "./dist/adapters/vitest.d.ts"
+    },
+    "./wdio": {
+      "require": "./dist/adapters/wdio.js",
+      "types": "./dist/adapters/wdio.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "qapulse",
+    "assertions",
+    "playwright-assertions",
+    "cypress-assertions",
+    "jest-assertions",
+    "vitest-assertions",
+    "fuzzy-assertions",
+    "semantic-assertions",
+    "visual-assertions",
+    "accessibility-assertions",
+    "ai-testing",
+    "test-automation",
+    "qa"
+  ],
+  "author": "QAPulse by SK <contact@skakarh.com> (https://skakarh.com)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/QAPulse-by-SK/QAPulseSK-assert.git"
+  },
+  "homepage": "https://skakarh.com",
+  "bugs": {
+    "url": "https://github.com/QAPulse-by-SK/QAPulseSK-assert/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.30.0",
+    "cypress": ">=12.0.0",
+    "jest": ">=29.0.0",
+    "vitest": ">=0.30.0",
+    "webdriverio": ">=8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": { "optional": true },
+    "cypress": { "optional": true },
+    "jest": { "optional": true },
+    "vitest": { "optional": true },
+    "webdriverio": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  }
+}

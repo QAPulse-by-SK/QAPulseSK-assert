@@ -1,6 +1,6 @@
 {
   "name": "qapulsesk-assert",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "All-in-one assertion library for Playwright, Cypress, Jest, Vitest & WebdriverIO — fuzzy, semantic, visual & accessibility assertions. AI-enhanced, free by default. By QAPulse by SK.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

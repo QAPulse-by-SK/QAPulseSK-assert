@@ -3,7 +3,6 @@
 
 // Adapters
 export { QAPulsePlaywrightAssert, qaPulseAssert } from './adapters/playwright';
-export { registerQAPulseCommands } from './adapters/cypress';
 export { setupQAPulseMatchers, qaPulseMatchers } from './adapters/jest';
 export { QAPulseWdioAssert, qaPulseWdioAssert } from './adapters/wdio';
 

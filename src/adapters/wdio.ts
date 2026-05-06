@@ -1,28 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AIAssertConfig, QAPulseAssertConfig } from '../core/types';
 import { assertFuzzyMatch, assertContains } from '../assertions/fuzzy';
 import { assertContainsMeaning, assertSatisfiesRule } from '../assertions/semantic';
 import { assertAccessibility } from '../assertions/accessibility';
 
+type WdioBrowser = any;
+
 export class QAPulseWdioAssert {
-  private browser: WebdriverIO.Browser;
+  private browser: WdioBrowser;
   private aiConfig?: AIAssertConfig;
 
-  constructor(browser: WebdriverIO.Browser, config: QAPulseAssertConfig = {}) {
+  constructor(browser: WdioBrowser, config: QAPulseAssertConfig = {}) {
     this.browser = browser;
     this.aiConfig = config.ai;
   }
 
   private requireAI(): AIAssertConfig {
     if (!this.aiConfig?.enabled || !this.aiConfig?.apiKey) {
-      throw new Error(
-        '[QAPulseSK-assert] AI assertions require ai config.\n' +
-        'Pass: new QAPulseWdioAssert(browser, { ai: { enabled: true, apiKey: "..." } })'
-      );
+      throw new Error('[QAPulseSK-assert] AI assertions require ai config with an apiKey.');
     }
     return this.aiConfig;
   }
-
-  // ─── Free assertions ─────────────────────────────────────────────────
 
   async toFuzzyHaveText(selector: string, expected: string, options: { threshold?: number } = {}): Promise<void> {
     const el = await this.browser.$(selector);
@@ -44,8 +42,6 @@ export class QAPulseWdioAssert {
     if (!result.passed) throw new Error(`[QAPulseSK-assert] ${result.message}`);
   }
 
-  // ─── AI assertions ───────────────────────────────────────────────────
-
   async toMean(selector: string, expectation: string): Promise<void> {
     const ai = this.requireAI();
     const el = await this.browser.$(selector);
@@ -63,7 +59,7 @@ export class QAPulseWdioAssert {
   }
 }
 
-export function qaPulseWdioAssert(browser: WebdriverIO.Browser, config: QAPulseAssertConfig = {}): QAPulseWdioAssert {
+export function qaPulseWdioAssert(browser: WdioBrowser, config: QAPulseAssertConfig = {}): QAPulseWdioAssert {
   return new QAPulseWdioAssert(browser, config);
 }
 

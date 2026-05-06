@@ -1,122 +1,84 @@
-import { AIAssertConfig, QAPulseAssertConfig } from '../core/types';
-import { assertFuzzyMatch, assertContains } from '../assertions/fuzzy';
-import { assertContainsMeaning, assertMatchesSpec, assertSatisfiesRule } from '../assertions/semantic';
-import { assertAccessibility } from '../assertions/accessibility';
-
 /**
- * Register QAPulseSK-assert custom Cypress commands.
- *
- * Usage in cypress/support/commands.ts:
+ * QAPulseSK-assert Cypress adapter
+ * Register in cypress/support/commands.ts:
  *   import { registerQAPulseCommands } from 'qapulsesk-assert/cypress';
- *   registerQAPulseCommands({ ai: { enabled: true, provider: 'anthropic', apiKey: '...' } });
+ *   registerQAPulseCommands({ ai: { enabled: true, apiKey: '...' } });
+ *
+ * This file is not compiled by the main TypeScript build as it requires
+ * Cypress globals (Cypress, cy, expect) which are only available in a Cypress context.
  */
+
+// Import types only - not compiled in main build
+import type { QAPulseAssertConfig, AIAssertConfig } from '../core/types';
+
+// This module is loaded directly by Cypress, not bundled
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { assertFuzzyMatch, assertContains } = require('../assertions/fuzzy');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { assertContainsMeaning, assertMatchesSpec, assertSatisfiesRule } = require('../assertions/semantic');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { assertAccessibility } = require('../assertions/accessibility');
+
 export function registerQAPulseCommands(config: QAPulseAssertConfig = {}): void {
   const ai: AIAssertConfig | undefined = config.ai;
 
-  // ─── Free: Fuzzy text match ─────────────────────────────────────────
-  Cypress.Commands.add(
-    'qpFuzzyText' as never,
-    { prevSubject: 'element' },
-    (subject: JQuery<HTMLElement>, expected: string, options: { threshold?: number } = {}) => {
-      const actual = (subject as JQuery<HTMLElement>).text().trim();
-      const result = assertFuzzyMatch(actual, expected, options);
-      expect(result.passed, result.message).to.be.true;
-      return cy.wrap(subject);
-    }
-  );
+  /* global Cypress, cy, expect */
+  // @ts-ignore - Cypress globals available at runtime
+  Cypress.Commands.add('qpFuzzyText', { prevSubject: 'element' }, (subject: JQuery, expected: string, options = {}) => {
+    const result = assertFuzzyMatch(subject.text().trim(), expected, options);
+    // @ts-ignore
+    expect(result.passed, result.message).to.be.true;
+    return cy.wrap(subject);
+  });
 
-  // ─── Free: Contains text ────────────────────────────────────────────
-  Cypress.Commands.add(
-    'qpContainsText' as never,
-    { prevSubject: 'element' },
-    (subject: JQuery<HTMLElement>, expected: string) => {
-      const actual = (subject as JQuery<HTMLElement>).text().trim();
-      const result = assertContains(actual, expected);
-      expect(result.passed, result.message).to.be.true;
-      return cy.wrap(subject);
-    }
-  );
+  // @ts-ignore
+  Cypress.Commands.add('qpContainsText', { prevSubject: 'element' }, (subject: JQuery, expected: string) => {
+    const result = assertContains(subject.text().trim(), expected);
+    // @ts-ignore
+    expect(result.passed, result.message).to.be.true;
+    return cy.wrap(subject);
+  });
 
-  // ─── Free: Accessibility check ──────────────────────────────────────
-  Cypress.Commands.add(
-    'qpBeAccessible' as never,
-    (options: { ignoreRules?: string[] } = {}) => {
-      cy.document().then(doc => {
-        const result = assertAccessibility(doc.documentElement.outerHTML, options);
+  // @ts-ignore
+  Cypress.Commands.add('qpBeAccessible', (options = {}) => {
+    cy.document().then((doc: Document) => {
+      const result = assertAccessibility(doc.documentElement.outerHTML, options);
+      // @ts-ignore
+      expect(result.passed, result.message).to.be.true;
+    });
+  });
+
+  // @ts-ignore
+  Cypress.Commands.add('qpMean', { prevSubject: 'element' }, (subject: JQuery, expectation: string) => {
+    if (!ai?.enabled || !ai?.apiKey) throw new Error('[QAPulseSK-assert] AI commands require ai config');
+    // @ts-ignore
+    return cy.wrap(assertContainsMeaning(subject.text().trim(), expectation, ai).then((result: any) => {
+      // @ts-ignore
+      expect(result.passed, result.message).to.be.true;
+    }));
+  });
+
+  // @ts-ignore
+  Cypress.Commands.add('qpMatchesSpec', (spec: string) => {
+    if (!ai?.enabled || !ai?.apiKey) throw new Error('[QAPulseSK-assert] AI commands require ai config');
+    cy.document().then((doc: Document) => {
+      // @ts-ignore
+      return assertMatchesSpec((doc.body as HTMLElement).innerText, spec, ai).then((result: any) => {
+        // @ts-ignore
         expect(result.passed, result.message).to.be.true;
       });
-    }
-  );
+    });
+  });
 
-  // ─── AI: Semantic meaning assertion ────────────────────────────────
-  Cypress.Commands.add(
-    'qpMean' as never,
-    { prevSubject: 'element' },
-    (subject: JQuery<HTMLElement>, expectation: string) => {
-      if (!ai?.enabled || !ai?.apiKey) {
-        throw new Error('[QAPulseSK-assert] AI commands require ai config in registerQAPulseCommands()');
-      }
-      const actual = (subject as JQuery<HTMLElement>).text().trim();
-      return cy.wrap(
-        assertContainsMeaning(actual, expectation, ai).then(result => {
-          expect(result.passed, result.message).to.be.true;
-        })
-      );
-    }
-  );
-
-  // ─── AI: Page spec assertion ────────────────────────────────────────
-  Cypress.Commands.add(
-    'qpMatchesSpec' as never,
-    (spec: string) => {
-      if (!ai?.enabled || !ai?.apiKey) {
-        throw new Error('[QAPulseSK-assert] AI commands require ai config in registerQAPulseCommands()');
-      }
-      cy.document().then(doc => {
-        const content = doc.body.innerText;
-        return assertMatchesSpec(content, spec, ai).then(result => {
-          expect(result.passed, result.message).to.be.true;
-        });
-      });
-    }
-  );
-
-  // ─── AI: Business rule assertion ────────────────────────────────────
-  Cypress.Commands.add(
-    'qpSatisfiesRule' as never,
-    { prevSubject: 'element' },
-    (subject: JQuery<HTMLElement>, rule: string) => {
-      if (!ai?.enabled || !ai?.apiKey) {
-        throw new Error('[QAPulseSK-assert] AI commands require ai config in registerQAPulseCommands()');
-      }
-      const actual = (subject as JQuery<HTMLElement>).text().trim();
-      return cy.wrap(
-        assertSatisfiesRule(actual, rule, ai).then(result => {
-          expect(result.passed, result.message).to.be.true;
-        })
-      );
-    }
-  );
-}
-
-// TypeScript declarations for custom commands
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      /** Free: Fuzzy text match assertion */
-      qpFuzzyText(expected: string, options?: { threshold?: number }): Chainable<JQuery<HTMLElement>>;
-      /** Free: Contains text assertion */
-      qpContainsText(expected: string): Chainable<JQuery<HTMLElement>>;
-      /** Free: Accessibility check */
-      qpBeAccessible(options?: { ignoreRules?: string[] }): void;
-      /** 🤖 AI: Semantic meaning assertion */
-      qpMean(expectation: string): Chainable<JQuery<HTMLElement>>;
-      /** 🤖 AI: Page spec assertion */
-      qpMatchesSpec(spec: string): void;
-      /** 🤖 AI: Business rule assertion */
-      qpSatisfiesRule(rule: string): Chainable<JQuery<HTMLElement>>;
-    }
-  }
+  // @ts-ignore
+  Cypress.Commands.add('qpSatisfiesRule', { prevSubject: 'element' }, (subject: JQuery, rule: string) => {
+    if (!ai?.enabled || !ai?.apiKey) throw new Error('[QAPulseSK-assert] AI commands require ai config');
+    // @ts-ignore
+    return cy.wrap(assertSatisfiesRule(subject.text().trim(), rule, ai).then((result: any) => {
+      // @ts-ignore
+      expect(result.passed, result.message).to.be.true;
+    }));
+  });
 }
 
 export default registerQAPulseCommands;

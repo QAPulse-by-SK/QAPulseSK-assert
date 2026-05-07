@@ -1,0 +1,1 @@
+{"version":3,"file":"cypress.d.ts","sourceRoot":"","sources":["../../src/adapters/cypress.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,mBAAmB,EAAkB,MAAM,eAAe,CAAC;AAQpE,wBAAgB,uBAAuB,CAAC,MAAM,GAAE,mBAAwB,GAAG,IAAI,CAwD9E;AAED,eAAe,uBAAuB,CAAC"}

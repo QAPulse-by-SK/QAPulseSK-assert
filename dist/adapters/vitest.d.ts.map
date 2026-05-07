@@ -1,0 +1,1 @@
+{"version":3,"file":"vitest.d.ts","sourceRoot":"","sources":["../../src/adapters/vitest.ts"],"names":[],"mappings":"AAEA,OAAO,EACL,oBAAoB,EACpB,eAAe,GAChB,MAAM,QAAQ,CAAC;AAEhB,YAAY,EAAE,WAAW,EAAE,MAAM,QAAQ,CAAC;AAE1C,OAAO,EAAE,oBAAoB,IAAI,OAAO,EAAE,MAAM,QAAQ,CAAC"}

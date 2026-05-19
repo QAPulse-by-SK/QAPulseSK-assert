@@ -312,17 +312,229 @@ assertSchema(response, { id: "number", title: "string", userId: "number", body: 
 
 ---
 
+## 🤖 AI-Powered Assertions *(Optional — Anthropic API key required)*
+
+This is where qapulsesk-assert does something **no other assertion library can do**.
+
+Standard assertions check **what an element contains**.
+AI assertions check **what an element means**.
+
+### The Problem Standard Assertions Cannot Solve
+
+```typescript
+// Standard assertion — passes for BOTH of these messages:
+await expect(page.locator("#flash")).toContainText("Your account");
+
+// "Your account has been created successfully!" ✅ correct
+// "Your account has been suspended."            ❌ wrong — but test PASSES
+```
+
+Standard assertions are string-based. They have no concept of meaning, intent, or context. A message that contains "Your account" passes regardless of whether it is good news or bad news.
+
+### How AI Assertions Solve This
+
+```typescript
+const qa = qaPulseAssert(page, {
+  ai: { enabled: true, apiKey: process.env.ANTHROPIC_API_KEY }
+});
+
+// AI checks semantic meaning — not exact text
+await qa.toMean("#flash", "account was created successfully");
+// ✅ PASSES for "Your account has been created!"
+// ❌ FAILS  for "Your account has been suspended."
+// ❌ FAILS  for "Your account was deleted."
+```
+
+The AI reads the element, understands its content in context, and verifies that it conveys the intended meaning — regardless of exact wording, phrasing, or sentence structure.
+
+---
+
+### `qa.toMean(selector, meaning, options?)`
+
+Tests whether an element **semantically means** what you describe.
+
+```typescript
+// Login success
+await qa.toMean("#flash", "login was successful");
+
+// Authentication failure
+await qa.toMean("#flash", "authentication failed due to invalid credentials");
+
+// CRM dashboard — user is logged in
+await qa.toMean("title", "user is logged in to the CRM");
+
+// Page heading purpose
+await qa.toMean("h2", "this is a login or authentication page");
+```
+
+**Real-world value:**
+- Survives copy changes — "Login successful" → "Welcome back!" still passes
+- Catches semantic bugs — wrong message type is caught even if text looks similar
+- Language independent — works across English, Arabic, French without changes
+
+---
+
+### `qa.satisfiesRule(selector, rule, options?)`
+
+Tests whether an element **satisfies a business rule** expressed in plain English.
+
+```typescript
+// Business rule: nav links must be descriptive
+await qa.satisfiesRule(
+  "ul li a",
+  "all links have descriptive text that clearly indicates their destination"
+);
+
+// Business rule: login form must have required security elements
+await qa.satisfiesRule(
+  "form",
+  "contains a username field, a password field, and a submit button"
+);
+
+// Business rule: CRM Contact form must capture required fields
+await qa.satisfiesRule(
+  "form",
+  "has fields for first name, last name, email address, and phone number"
+);
+
+// Business rule: error messages must not expose system internals
+await qa.satisfiesRule(
+  "#flash",
+  "is a user-friendly error message that does not expose technical details or system internals"
+);
+```
+
+**Real-world value:**
+- Write requirements as tests — turn acceptance criteria directly into assertions
+- Catches UX violations — "click here" links, missing fields, exposed stack traces
+- No selector archaeology — describe what you need, not how the DOM is structured
+
+---
+
+### `qa.pageMatchesSpec(specification, options?)`
+
+Tests whether the **entire page** matches a specification written in plain English.
+The most powerful of the three — describe what the page should do and Claude verifies it.
+
+```typescript
+// Login page specification
+await qa.pageMatchesSpec(
+  `This page should:
+   - Be a login or sign-in page
+   - Have a form with username and password fields
+   - Have a submit button to authenticate
+   - Not show any sensitive system information`
+);
+
+// SuiteCRM dashboard specification
+await qa.pageMatchesSpec(
+  `This page should:
+   - Be a CRM dashboard or home page
+   - Show a logged-in user interface (not a login form)
+   - Have navigation to CRM modules like Contacts, Accounts, or Opportunities
+   - Display business data or dashboards`
+);
+
+// Contacts list specification
+await qa.pageMatchesSpec(
+  `This page should:
+   - Show a list or grid of contacts
+   - Have column headers for contact information (name, email, phone)
+   - Allow users to search or filter contacts
+   - Be part of a CRM or contact management system`
+);
+```
+
+**Real-world value:**
+- Replaces entire test suites for page-level validation
+- Maps directly to acceptance criteria in Jira/Confluence
+- Catches layout/content regressions that element-level tests miss
+
+---
+
+### AI Assertion Setup
+
+```typescript
+// Install
+npm install qapulsesk-assert
+
+// Set your Anthropic API key
+// Option 1: .env file
+ANTHROPIC_API_KEY=sk-ant-...
+
+// Option 2: environment variable
+export ANTHROPIC_API_KEY=sk-ant-...
+
+// Option 3: inline (not recommended for production)
+const qa = qaPulseAssert(page, {
+  ai: {
+    enabled: true,
+    apiKey: "sk-ant-...",
+    model: "claude-3-haiku-20240307"  // optional — haiku is fast and cheap
+  }
+});
+```
+
+---
+
+### AI Assertions — Running the Demo Tests
+
+The `with-packages` branch of the Playwright boilerplate has 14 AI assertion tests — **skipped by default**, runnable with an API key:
+
+```bash
+# Clone the boilerplate
+git clone -b with-packages https://github.com/QAPulse-by-SK/playwright-boilerplate.git
+cd playwright-boilerplate && npm install && npx playwright install
+
+# Run AI tests (requires Anthropic API key)
+ANTHROPIC_API_KEY=your-key npx playwright test tests/packages/assert.ai.spec.ts
+
+# Run all package tests (AI tests auto-skipped without key)
+npx playwright test tests/packages/ --project=chromium
+```
+
+**What the 14 tests cover:**
+
+| Suite | Tests | Target | What it tests |
+|---|---|---|---|
+| `qa.toMean()` | 5 | the-internet + SuiteCRM | Semantic meaning of messages and page titles |
+| `qa.satisfiesRule()` | 4 | the-internet + SuiteCRM | Business rules — form fields, link quality, error messages |
+| `qa.pageMatchesSpec()` | 4 | the-internet + SuiteCRM | Full page against plain-English specifications |
+| AI vs Standard | 1 | the-internet | Side-by-side comparison showing where AI adds value |
+
+**Two real-world targets:**
+- `the-internet.herokuapp.com` — clean HTML, easy to understand the concept
+- `demo.suiteondemand.com` — real enterprise CRM, shows AI on production-grade UI
+
+---
+
+### AI Assertion Comparison
+
+| | Standard Playwright | qapulsesk-assert AI |
+|---|---|---|
+| Checks exact text | ✅ | ✅ |
+| Handles copy changes | ❌ | ✅ |
+| Understands meaning | ❌ | ✅ |
+| Business rules | ❌ | ✅ |
+| Full page spec | ❌ | ✅ |
+| Language independent | ❌ | ✅ |
+| API key required | ❌ | ✅ |
+| Cost per assertion | Free | ~$0.001 (haiku) |
+
+---
+
 ## 🧪 See It In Action
 
 These test files in the QAPulse boilerplates use `qapulsesk-assert` against real-world sites:
 
-| File | Tests | Target |
-|---|---|---|
-| [assert.spec.ts](https://github.com/QAPulse-by-SK/playwright-boilerplate/blob/with-packages/tests/packages/assert.spec.ts) | 23 | jsonplaceholder + the-internet |
-| [assert.demo.spec.ts](https://github.com/QAPulse-by-SK/playwright-boilerplate/blob/with-packages/tests/packages/assert.demo.spec.ts) | 19 | Before/after storytelling |
-| [suitecrm.spec.ts](https://github.com/QAPulse-by-SK/playwright-boilerplate/blob/with-packages/tests/packages/suitecrm.spec.ts) | 26 | SuiteCRM enterprise CRM |
-| [assert.demo.cy.js](https://github.com/QAPulse-by-SK/cypress-boilerplate/blob/with-packages/cypress/e2e/packages/assert.demo.cy.js) | 15 | Cypress version |
-| [suitecrm.cy.js](https://github.com/QAPulse-by-SK/cypress-boilerplate/blob/with-packages/cypress/e2e/packages/suitecrm.cy.js) | 23 | Cypress + SuiteCRM |
+| File | Tests | Target | Notes |
+|---|---|---|---|
+| [assert.spec.ts](https://github.com/QAPulse-by-SK/playwright-boilerplate/blob/with-packages/tests/packages/assert.spec.ts) | 23 | jsonplaceholder + the-internet | Full assertion suite |
+| [assert.demo.spec.ts](https://github.com/QAPulse-by-SK/playwright-boilerplate/blob/with-packages/tests/packages/assert.demo.spec.ts) | 19 | the-internet + SuiteCRM | Before/after storytelling |
+| [assert.ai.spec.ts](https://github.com/QAPulse-by-SK/playwright-boilerplate/blob/with-packages/tests/packages/assert.ai.spec.ts) | 14 | the-internet + SuiteCRM | AI features — skipped without API key |
+| [suitecrm.spec.ts](https://github.com/QAPulse-by-SK/playwright-boilerplate/blob/with-packages/tests/packages/suitecrm.spec.ts) | 26 | SuiteCRM enterprise CRM | Real-world CRM testing |
+| [assert.demo.cy.js](https://github.com/QAPulse-by-SK/cypress-boilerplate/blob/with-packages/cypress/e2e/packages/assert.demo.cy.js) | 15 | the-internet + SuiteCRM | Cypress version |
+| [suitecrm.cy.js](https://github.com/QAPulse-by-SK/cypress-boilerplate/blob/with-packages/cypress/e2e/packages/suitecrm.cy.js) | 23 | Cypress + SuiteCRM | Cypress CRM testing |
 
 ---
 

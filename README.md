@@ -560,3 +560,20 @@ MIT © [QA Pulse by SK](https://www.skakarh.com)
 🌐 [skakarh.com](https://www.skakarh.com) &nbsp;·&nbsp; 🏢 [QAPulse-by-SK](https://github.com/QAPulse-by-SK) &nbsp;·&nbsp; ⭐ Star if it helped!
 
 </div>
+
+---
+
+## 🌐 More from QA Pulse by SK
+
+| | |
+|---|---|
+| 🌐 **Website** | [www.skakarh.com](https://www.skakarh.com) |
+| 📦 **All Open Source Products** | [skakarh.com/products](https://www.skakarh.com/products/) |
+| ✍️ **QA Automation Blog** | [skakarh.com/blog](https://www.skakarh.com/blog/) |
+| 🛠️ **QA Consulting Services** | [skakarh.com/services](https://www.skakarh.com/services/) |
+| 🏢 **GitHub Organisation** | [github.com/QAPulse-by-SK](https://github.com/QAPulse-by-SK) |
+| 🎎 **Playwright Boilerplate** | [github.com/QAPulse-by-SK/playwright-boilerplate](https://github.com/QAPulse-by-SK/playwright-boilerplate) |
+| 🌲 **Cypress Boilerplate** | [github.com/QAPulse-by-SK/cypress-boilerplate](https://github.com/QAPulse-by-SK/cypress-boilerplate) |
+| 🐍 **Selenium Boilerplate** | [github.com/QAPulse-by-SK/selenium-boilerplate](https://github.com/QAPulse-by-SK/selenium-boilerplate) |
+| 📊 **qapulsesk-report** | [npmjs.com/package/qapulsesk-report](https://www.npmjs.com/package/qapulsesk-report) |
+| 🤖 **qapulsesk-gen** | [npmjs.com/package/qapulsesk-gen](https://www.npmjs.com/package/qapulsesk-gen) |
